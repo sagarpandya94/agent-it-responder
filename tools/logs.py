@@ -1,6 +1,8 @@
 import json
+import logging
 
-# Mock log database keyed by server ID
+logger = logging.getLogger(__name__)
+
 LOG_DATABASE = {
     "payment-server-01": [
         "[INFO] Request received /pay/v1",
@@ -47,6 +49,8 @@ DEFAULT_LOGS = [
 
 def fetch_recent_logs(server_id: str, lines: int = 5) -> str:
     """Returns the last N log lines for a given server as a JSON string."""
-    print(f"-> TOOL: Fetching last {lines} log lines for {server_id}...")
+    logger.info("Fetching last %d log lines for server: %s", lines, server_id)
     logs = LOG_DATABASE.get(server_id, DEFAULT_LOGS)
-    return json.dumps({"logs": logs[:lines]})
+    selected = logs[:lines]
+    logger.debug("Logs returned for %s: %s", server_id, selected)
+    return json.dumps({"logs": selected})

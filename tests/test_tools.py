@@ -34,6 +34,34 @@ class TestGetServerHealth:
         result = json.loads(get_server_health("nonexistent-server-99"))
         assert "error" in result
 
+    def test_localhost_returns_live_metrics(self):
+        """psutil path: localhost should return real CPU/memory figures."""
+        pytest.importorskip("psutil")   # skip gracefully if psutil not installed
+        result = json.loads(get_server_health("localhost"))
+        # Should not be an error
+        assert "error" not in result
+        assert "cpu" in result
+        assert "memory" in result
+        assert result.get("source") == "live"
+
+    def test_localhost_cpu_is_valid_percentage(self):
+        """Live CPU reading should be a parseable float between 0 and 100."""
+        pytest.importorskip("psutil")
+        result = json.loads(get_server_health("localhost"))
+        if "error" in result:
+            pytest.skip("psutil not available")
+        cpu_value = float(result["cpu"].rstrip("%"))
+        assert 0.0 <= cpu_value <= 100.0
+
+    def test_localhost_memory_is_valid_percentage(self):
+        """Live memory reading should be a parseable float between 0 and 100."""
+        pytest.importorskip("psutil")
+        result = json.loads(get_server_health("localhost"))
+        if "error" in result:
+            pytest.skip("psutil not available")
+        mem_value = float(result["memory"].rstrip("%"))
+        assert 0.0 <= mem_value <= 100.0
+
 
 # ── fetch_recent_logs ─────────────────────────────────────────────────────────
 
